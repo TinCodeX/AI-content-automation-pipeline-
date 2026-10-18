@@ -1,0 +1,200 @@
+{
+  "name": "Multi-Channel AI Content Automation Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-node",
+      "name": "Weekly Editorial Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "content-trigger",
+        "options": {}
+      },
+      "id": "webhook-trigger-node",
+      "name": "Inbound Content Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 480],
+      "webhookId": "9fa8ca87-content-trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/webhook/content-trigger",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Webhook-Secret",
+              "value": "={{ $env.WEBHOOK_SECRET || 'super-secret-webhook-key-change-in-production' }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"topic\": \"{{ $json.body?.topic || 'Practical LLM Agents in Production' }}\",\n  \"target_audience\": \"{{ $json.body?.target_audience || 'Junior to mid-level backend developers' }}\",\n  \"tone\": \"{{ $json.body?.tone || 'insightful & authoritative' }}\",\n  \"channels\": {{ JSON.stringify($json.body?.channels || ['blog', 'twitter', 'linkedin']) }}\n}",
+        "options": {}
+      },
+      "id": "http-request-pipeline",
+      "name": "Trigger FastAPI Pipeline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 380]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.status }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "completed",
+              "outputKey": "completed"
+            },
+            {
+              "value2": "duplicate_rejected",
+              "outputKey": "duplicate_rejected"
+            }
+          ]
+        }
+      },
+      "id": "status-switch-router",
+      "name": "Branch on Pipeline Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [720, 380]
+    },
+    {
+      "parameters": {
+        "channel": "#content-publishing",
+        "text": "=🎉 *New Multi-Channel Content Generated!*\n*Topic:* {{ $json.topic }}\n*Job ID:* `{{ $json.job_id }}`\n*Word Count:* {{ $json.word_count }} words\n*Artifacts:* {{ Object.keys($json.exported_files || {}).join(', ') }}"
+      },
+      "id": "slack-notify-success",
+      "name": "Notify Slack: Deliverables Ready",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [960, 260]
+    },
+    {
+      "parameters": {
+        "channel": "#content-review",
+        "text": "=⚠️ *Topic Deduplication Warning*\n*Candidate Topic:* {{ $json.topic }}\n*Status:* Duplicate Rejected\n*Details:* {{ $json.message }}\n*Matched Existing:* {{ $json.match_data?.matched_topic }} (Similarity: {{ Math.round(($json.match_data?.similarity || 0) * 100) }}%)"
+      },
+      "id": "slack-notify-rejected",
+      "name": "Notify Slack: Duplicate Rejected",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [960, 480]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": "content-editorial-calendar-id",
+        "title": "={{ $json.topic }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status",
+              "selectValue": "Ready for Review"
+            },
+            {
+              "key": "Job ID",
+              "richTextValue": "={{ $json.job_id }}"
+            }
+          ]
+        }
+      },
+      "id": "notion-create-page",
+      "name": "Log to Notion Editorial Board",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.1,
+      "position": [1180, 260]
+    }
+  ],
+  "connections": {
+    "Weekly Editorial Schedule": {
+      "main": [
+        [
+          {
+            "node": "Trigger FastAPI Pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inbound Content Webhook": {
+      "main": [
+        [
+          {
+            "node": "Trigger FastAPI Pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger FastAPI Pipeline": {
+      "main": [
+        [
+          {
+            "node": "Branch on Pipeline Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branch on Pipeline Status": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack: Deliverables Ready",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Slack: Duplicate Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack: Deliverables Ready": {
+      "main": [
+        [
+          {
+            "node": "Log to Notion Editorial Board",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
