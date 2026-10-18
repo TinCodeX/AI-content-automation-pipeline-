@@ -1,0 +1,9 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\bizra\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/content_pipeline"
+    ],
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/content_pipeline"
+    ]
+}

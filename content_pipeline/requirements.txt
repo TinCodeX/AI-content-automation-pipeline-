@@ -1,0 +1,21 @@
+# Core Web & API Framework
+fastapi>=0.115.0,<1.0.0
+uvicorn[standard]>=0.30.0,<1.0.0
+httpx>=0.27.0,<1.0.0
+
+# Data Validation & Configuration
+pydantic>=2.8.0,<3.0.0
+pydantic-settings>=2.4.0,<3.0.0
+python-dotenv>=1.0.1,<2.0.0
+
+# LLM Providers (Gemini & OpenAI)
+google-genai>=0.1.1
+openai>=1.40.0
+
+# Scheduling & Cron Triggers
+apscheduler>=3.10.4,<4.0.0
+schedule>=1.2.2,<2.0.0
+
+# HTTP Client & Terminal Diagnostics
+requests>=2.32.3,<3.0.0
+rich>=13.8.0,<14.0.0
