@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments & secrets
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# Local Vector Database & Persistent Storage
+content_pipeline/.chroma_db/
+.chroma_db/
+*.chroma/
+
+# IDE & Editor artifacts
+.vscode/*
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

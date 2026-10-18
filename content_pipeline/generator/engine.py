@@ -173,44 +173,47 @@ class ContentGenerator:
 
         mock_data: Dict[str, Any] = {}
 
+        slug = re.sub(r"[^a-zA-Z0-9\s-]", "", topic).strip().lower()
+        slug = re.sub(r"[\s_-]+", "-", slug)
+
         if "blog" in active_channels:
             mock_data["blog"] = {
                 "title": f"Architecting {topic}: Patterns & Production Realities",
-                "slug": "designing-autonomous-micro-agents-python",
+                "slug": slug,
                 "meta_description": (
-                    "Master modern patterns for autonomous Python micro-agents: state management, "
-                    "reliable tools, and resilient event-driven execution."
+                    f"A practical engineering guide to {topic}: core architecture, state "
+                    "management, and resilient production best practices."
                 ),
                 "table_of_contents": [
-                    "The Paradigm Shift to Micro-Agents",
-                    "Core Architecture: The ReAct Loop",
+                    "The Paradigm Shift",
+                    "Core Architecture & Workflow",
                     "State & Memory Isolation",
                     "Production Observability & Guardrails",
                     "Conclusion & Implementation Blueprint",
                 ],
                 "markdown_content": (
                     f"# Architecting {topic}\n\n"
-                    "Autonomous agents often fail not because models lack reasoning, "
+                    "Complex automated workflows often fail not because models lack reasoning, "
                     "but because architectural boundaries around them are leaky.\n\n"
-                    "## 1. The Paradigm Shift to Micro-Agents\n\n"
-                    "Instead of a monolithic prompt executing arbitrary tasks, micro-agents "
-                    "scope responsibilities to discrete operational surfaces.\n\n"
+                    "## 1. The Paradigm Shift\n\n"
+                    "Instead of a monolithic prompt executing arbitrary tasks, modern "
+                    "systems scope responsibilities to discrete operational surfaces.\n\n"
                     "```python\n"
-                    "class MicroAgent:\n"
-                    "    def __init__(self, name: str, tools: list):\n"
+                    "class PipelineWorker:\n"
+                    "    def __init__(self, name: str, config: dict):\n"
                     "        self.name = name\n"
-                    "        self.tools = {t.name: t for t in tools}\n\n"
-                    "    async def run_step(self, context: dict) -> dict:\n"
-                    "        # Isolated agent execution loop\n"
+                    "        self.config = config\n\n"
+                    "    async def execute(self, payload: dict) -> dict:\n"
+                    "        # Isolated worker execution step\n"
                     "        return {'status': 'completed'}\n"
                     "```\n\n"
                     "## 2. Production Guardrails\n\n"
                     "> [!IMPORTANT]\n"
                     "> Always enforce deterministic timeouts and strict schema validation "
-                    "on all agent-dispatched actions.\n\n"
+                    "on all dispatched actions.\n\n"
                     "## 3. Summary\n\n"
-                    "By adopting single-responsibility micro-agents, engineering teams "
-                    "drastically cut token latency and eliminate runaway hallucination loops."
+                    "By adopting single-responsibility workers, engineering teams "
+                    "drastically cut latency and eliminate unpredictable execution loops."
                 ),
                 "estimated_read_time_minutes": 6,
             }
@@ -218,25 +221,24 @@ class ContentGenerator:
         if "twitter" in active_channels:
             mock_data["twitter"] = {
                 "hook_tweet": (
-                    "Most autonomous AI agents crash in production. Why?\n\n"
-                    "Because devs build monolithic agents instead of focused micro-agents.\n\n"
-                    "Here is the blueprint for resilient, modular Python agents 🧵👇"
+                    f"Thinking about {topic} in production? Most teams hit a wall.\n\n"
+                    "Here is the blueprint for resilient, modular architecture 🧵👇"
                 ),
                 "body_tweets": [
                     {
                         "index": 1,
                         "content": (
-                            "1/ Monolithic agents try to do everything: research, write, "
-                            "and deploy. When one step fails, the entire context breaks. "
-                            "#Python #AIEngineering"
+                            f"1/ Scaling {topic[:40]} requires clear architectural boundaries. "
+                            "When modules share too much state, debugging becomes a nightmare. "
+                            "#AIEngineering #Python"
                         ),
                         "hashtags": ["#Python", "#AIEngineering"],
                     },
                     {
                         "index": 2,
                         "content": (
-                            "2/ Solution: The Micro-Agent Pattern.\n\n"
-                            "Give each agent ONE tool, ONE schema contract, and ONE clear "
+                            "2/ Solution: The Micro-Service Pattern.\n\n"
+                            "Give each component ONE schema contract and ONE clear "
                             "completion condition. Treat them like Unix processes."
                         ),
                         "hashtags": ["#Architecture"],
@@ -245,7 +247,7 @@ class ContentGenerator:
                         "index": 3,
                         "content": (
                             "3/ State Isolation.\n\n"
-                            "Never pass 50k tokens of raw chat history between agents. "
+                            "Never pass uncontrolled state logs between components. "
                             "Pass typed Pydantic artifacts with minimal required context."
                         ),
                         "hashtags": ["#SoftwareDevelopment"],
@@ -254,45 +256,44 @@ class ContentGenerator:
                         "index": 4,
                         "content": (
                             "4/ Deterministic Fallbacks.\n\n"
-                            "When an agent tool call errors, don't let the LLM guess. "
-                            "Enforce retry quotas and circuit breakers before human-in-the-loop."
+                            "When an operation errors, don't let it silently fail. "
+                            "Enforce retry quotas and circuit breakers before escalation."
                         ),
                         "hashtags": ["#DevOps"],
                     },
                 ],
                 "call_to_action_tweet": (
                     "Liked this breakdown? 🔁 Retweet to share with fellow engineers and "
-                    "drop your favorite agent framework in the replies! #AI #Python"
+                    "drop your thoughts in the replies! #AI #Python"
                 ),
                 "total_tweets": 6,
             }
 
         if "linkedin" in active_channels:
             mock_data["linkedin"] = {
-                "headline": f"Why Monolithic AI Agents Fail (And How Micro-Agents Fix Them)",
+                "headline": f"How to Scale {topic} in Production Systems",
                 "hook": (
-                    "We spent months debugging agent loops that hallucinated in production.\n\n"
-                    "The fix was surprisingly simple: Treat AI agents like microservices."
+                    f"We recently revamped our approach to {topic}.\n\n"
+                    "Here is what worked, what failed, and the key lessons learned:"
                 ),
                 "body": (
-                    "In early prototypes, it's tempting to build a 'Super-Agent' that does "
-                    "research, synthesis, schema validation, and database updates all in one.\n\n"
-                    "In practice, this creates context pollution, high latency, and unpredictable "
-                    "token spend.\n\n"
-                    "By decomposing the pipeline into micro-agents with strict Pydantic inputs "
-                    "and outputs, we achieved 99.4% task completion reliability."
+                    f"Building production systems around {topic} requires moving past naive "
+                    "prototypes. In practice, monoliths create context pollution, high latency, "
+                    "and unpredictable failure cascades.\n\n"
+                    "By decomposing the pipeline into discrete components with strict Pydantic "
+                    "inputs and outputs, we achieved 99.4% task completion reliability."
                 ),
                 "key_takeaways": [
-                    "Single Responsibility: One toolset and one goal per agent instance.",
+                    "Single Responsibility: One toolset and one goal per worker instance.",
                     "Typed Contracts: Pydantic schemas eliminate ambiguous unstructured outputs.",
-                    "Isolated Context: Pass minimal state artifacts instead of raw chat logs.",
-                    "Circuit Breakers: Hard cutoffs on recursive reasoning steps.",
+                    "Isolated Context: Pass minimal state artifacts instead of raw logs.",
+                    "Circuit Breakers: Hard cutoffs on recursive steps.",
                 ],
                 "call_to_action": (
-                    "Are you running autonomous agents in production today, or still testing "
+                    "Are you running similar pipelines in production today, or still testing "
                     "in staging? Let's discuss your architectural bottlenecks in the comments."
                 ),
-                "hashtags": ["#AIEngineering", "#Python", "#SoftwareArchitecture", "#LLMOps"],
+                "hashtags": ["#AIEngineering", "#Python", "#SoftwareArchitecture", "#DevOps"],
             }
 
         return self._assemble_bundle(active_job_id, topic, mock_data, active_channels)
